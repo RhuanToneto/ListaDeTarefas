@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        html {
+            font-size: 40px;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 20px;
+            background-color: #f5f5f5;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            font-size: 90px;
+            margin-bottom: 20px;
+        }
+
+        .task-input {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 4px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            font-size: 30px;
+            background-color: #fff;
+            color: #333;
+        }
+
+        .btn-add-task,
+        .btn-clear-tasks,
+        .btn-update-task,
+        .btn-remove-task {
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            padding: 18px 40px;
+            cursor: pointer;
+            margin-bottom: 5px;
+            font-size: 30px;
+        }
+
+        .task-list {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .task-list li {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 50px;
+        }
+
+        .task-list li input.task-name {
+            width: 50rem;
+            margin-right: 1rem;
+            font-size: 35px;
+            text-align: center;
+        }
+
+
+        .task-list li button {
+            margin-left: 0.5rem;
+            margin-right: 0.5rem;
+            font-size: 30px;
+        }
+
+        .task-status {
+            margin-right: 0.5rem;
+            font-size: 35px;
+        }
+    </style>
+    <script>
+        function updateTaskName(index) {
+            const taskNameInput = document.getElementsByClassName('task-name')[index];
+            const updatedTaskName = taskNameInput.value;
+
+            fetch(`/update/${index}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: updatedTaskName })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        console.error('Ocorreu um erro ao atualizar a tarefa.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ocorreu um erro ao atualizar a tarefa.', error);
+                });
+        }
+
+        function updateTaskStatus(index) {
+            const taskStatusSelect = document.getElementsByClassName('task-status')[index];
+            const updatedTaskStatus = taskStatusSelect.value;
+
+            fetch(`/update/${index}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: updatedTaskStatus })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        console.error('Ocorreu um erro ao atualizar o status da tarefa.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ocorreu um erro ao atualizar o status da tarefa.', error);
+                });
+        }
+
+        function removeTask(index) {
+            fetch(`/remove/${index}`, {
+                method: 'POST'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        console.error('Ocorreu um erro ao remover a tarefa.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ocorreu um erro ao remover a tarefa.', error);
+                });
+        }
+
+        function removeAllTasks() {
+            fetch('/removeAll', {
+                method: 'POST'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        console.error('Ocorreu um erro ao remover todas as tarefas.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ocorreu um erro ao remover todas as tarefas.', error);
+                });
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Lista de Tarefas</h1>
+        <form action="/add" method="POST">
+            <input class="task-input" type="text" name="task" placeholder="Digite a tarefa..." required>
+            <br>
+            <button class="btn-add-task" type="submit">Adicionar</button>
+        </form>
+        <ul class="task-list">
+            <% if (tasks.length> 0) { %>
+                <% tasks.forEach((task, index)=> { %>
+                    <li>
+                        <input type="text" class="task-name" value="<%= task.name %>" style="width: 12rem;">
+                        <button class="btn-update-task" onclick="updateTaskName(<%- index %>)">Renomear</button>
+                        <select class="task-status" onchange="updateTaskStatus(<%- index %>)"
+                            style="margin-left: 10px; margin-bottom: 10px;">
+                            <option value="Not Started" <% if (task.status==='Not Started' ) { %>selected<% } %>>Não
+                                    Iniciada</option>
+                            <option value="In Progress" <% if (task.status==='In Progress' ) { %>selected<% } %>>Em
+                                    Andamento</option>
+                            <option value="Completed" <% if (task.status==='Completed' ) { %>selected<% } %>>Concluída
+                            </option>
+                        </select>
+                        <button class="btn-remove-task" onclick="removeTask(<%- index %>)">Remover</button>
+                    </li>
+                    <% }); %>
+                        <% } %>
+        </ul>
+        <button class="btn-clear-tasks" onclick="removeAllTasks()">Apagar tudo</button>
+    </div>
+</body>
+
+</html>
